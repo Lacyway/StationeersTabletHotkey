@@ -88,22 +88,33 @@
 			<!-- Define output release directory, staging directories, and archive paths -->
 			<ReleaseOutputDir>$(ProjectDir)Release\</ReleaseOutputDir>
 			<ModZipStagingDir>$(TargetDir)ZipStaging\</ModZipStagingDir>
-			<ModZipDestinationFolder>$(ModZipStagingDir)BepInEx\plugins\</ModZipDestinationFolder>
+
+			<!-- Updated destination folder to root directly inside the project-named folder -->
+			<ModZipDestinationFolder>$(ModZipStagingDir)$(TargetName)\</ModZipDestinationFolder>
+
 			<ZipFileName>$(TargetName)_v$(ModVersion).zip</ZipFileName>
 			<TargetZipPath>$(TargetDir)$(ZipFileName)</TargetZipPath>
 			<ProjectReleaseZipPath>$(ReleaseOutputDir)$(ZipFileName)</ProjectReleaseZipPath>
 		</PropertyGroup>
 
+		<!-- Collect all files from the project's About folder to preserve directory structure -->
+		<ItemGroup>
+			<AboutFiles Include="$(ProjectDir)About\**\*.*" />
+		</ItemGroup>
+
 		<!-- Clean up staging folder and previous zip build artifacts -->
 		<RemoveDir Directories="$(ModZipStagingDir)" />
 		<Delete Files="$(TargetZipPath)" />
 
-		<!-- Ensure \Release\ and \BepInEx\plugins\ directories exist -->
+		<!-- Ensure \Release\ and destination directories exist -->
 		<MakeDir Directories="$(ReleaseOutputDir)" />
 		<MakeDir Directories="$(ModZipDestinationFolder)" />
 
-		<!-- Copy built assembly into staging folder -->
+		<!-- Copy built assembly into $(TargetName)\ -->
 		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModZipDestinationFolder)" />
+
+		<!-- Copy About folder contents into $(TargetName)\About\ -->
+		<Copy SourceFiles="@(AboutFiles)" DestinationFolder="$(ModZipDestinationFolder)About\%(RecursiveDir)" />
 
 		<!-- Pack staging structure into zip -->
 		<ZipDirectory SourceDirectory="$(ModZipStagingDir)" DestinationFile="$(TargetZipPath)" Overwrite="true" />

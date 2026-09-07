@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetadata>
+  <Name>StationeersTabletHotkey</Name>
+  <ModID>lcw.sth</ModID>
+  <Author>Lacyway</Author>
+  <Version>1.0.0</Version>
+  <Description>
+    [b]WARNING:[/b] This is a StationeersLaunchPad Plugin Mod. It requires BepInEx to be installed with the StationeersLaunchPad plugin.
+    See: https://github.com/StationeersLaunchPad/StationeersLaunchPad
+    
+    This mods allow you to key bind the switch cartridge button in your Advanced Tablet using the in-game controls menu to a key of your liking (defaults to Numpad0).
+  </Description>
+  <ChangeLog>
+    1.0.0:
+    - Initial release
+  </ChangeLog>
+  <Tags>
+    <Tag>QoL</Tag>
+    <Tag>BepInEx</Tag>
+    <Tag>StationeersLaunchPad</Tag>
+  </Tags>
+</ModMetadata>
