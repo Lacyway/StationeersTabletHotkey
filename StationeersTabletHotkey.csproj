@@ -1,0 +1,121 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <OutputType>Library</OutputType>
+    <RootNamespace>StationeersTabletHotkey</RootNamespace>
+    <AssemblyName>StationeersTabletHotkey</AssemblyName>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Deterministic>true</Deterministic>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <!-- Debug and Release settings -->
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'">
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="References\**" />
+    <Compile Remove="Release\**" />
+    <EmbeddedResource Remove="References\**" />
+    <EmbeddedResource Remove="Release\**" />
+    <None Remove="References\**" />
+    <None Remove="Release\**" />
+  </ItemGroup>
+
+  <!-- Assembly references -->
+	<ItemGroup>
+		<Reference Include="0Harmony">
+			<HintPath>References\0Harmony.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Assembly-CSharp">
+			<HintPath>References\Assembly-CSharp.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="BepInEx">
+			<HintPath>References\BepInEx.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
+		<Reference Include="Brutal.RakNet">
+		  <HintPath>References\Brutal.RakNet.dll</HintPath>
+		</Reference>
+		<Reference Include="Facepunch.Steamworks.Win64">
+		  <HintPath>References\Facepunch.Steamworks.Win64.dll</HintPath>
+		</Reference>
+		<Reference Include="System.Runtime.CompilerServices.Unsafe">
+		  <HintPath>References\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
+		</Reference>
+		<Reference Include="UniTask">
+		  <HintPath>References\UniTask.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine">
+		  <HintPath>References\UnityEngine.dll</HintPath>
+		</Reference>
+		<Reference Include="UnityEngine.CoreModule">
+		  <HintPath>References\UnityEngine.CoreModule.dll</HintPath>
+		</Reference>
+	</ItemGroup>
+
+	<Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Debug'">
+		<Exec Command="xcopy /Y /D &quot;$(TargetPath)&quot; &quot;D:\StationeersDev\Stationeers\BepInEx\plugins\&quot;" />
+		<Exec Command="xcopy /Y /D &quot;$(TargetPath)&quot; &quot;D:\StationeersDev\Stationeers2\BepInEx\plugins\&quot;" />
+	</Target>
+
+	<Target Name="ZipModRelease" AfterTargets="PostBuildEvent" Condition="'$(Configuration)' == 'Release'">
+		<!-- Inspect the compiled assembly DLL to extract its version attributes -->
+		<GetAssemblyIdentity AssemblyFiles="$(TargetPath)">
+			<Output TaskParameter="Assemblies" ItemName="TargetsAssembly" />
+		</GetAssemblyIdentity>
+
+		<PropertyGroup>
+			<!-- Extract raw version (e.g., 0.1.0.0 or 1.0.0.0) -->
+			<_RawVersion>%(TargetsAssembly.Version)</_RawVersion>
+
+			<!-- Trim trailing .0 if present (converts 1.0.0.0 -> 1.0.0) -->
+			<ModVersion Condition="$(_RawVersion.EndsWith('.0'))">$(_RawVersion.Substring(0, $(_RawVersion.LastIndexOf('.'))))</ModVersion>
+			<ModVersion Condition="'$(ModVersion)' == ''">$(_RawVersion)</ModVersion>
+
+			<!-- Define output release directory, staging directories, and archive paths -->
+			<ReleaseOutputDir>$(ProjectDir)Release\</ReleaseOutputDir>
+			<ModZipStagingDir>$(TargetDir)ZipStaging\</ModZipStagingDir>
+			<ModZipDestinationFolder>$(ModZipStagingDir)BepInEx\plugins\</ModZipDestinationFolder>
+			<ZipFileName>$(TargetName)_v$(ModVersion).zip</ZipFileName>
+			<TargetZipPath>$(TargetDir)$(ZipFileName)</TargetZipPath>
+			<ProjectReleaseZipPath>$(ReleaseOutputDir)$(ZipFileName)</ProjectReleaseZipPath>
+		</PropertyGroup>
+
+		<!-- Clean up staging folder and previous zip build artifacts -->
+		<RemoveDir Directories="$(ModZipStagingDir)" />
+		<Delete Files="$(TargetZipPath)" />
+
+		<!-- Ensure \Release\ and \BepInEx\plugins\ directories exist -->
+		<MakeDir Directories="$(ReleaseOutputDir)" />
+		<MakeDir Directories="$(ModZipDestinationFolder)" />
+
+		<!-- Copy built assembly into staging folder -->
+		<Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModZipDestinationFolder)" />
+
+		<!-- Pack staging structure into zip -->
+		<ZipDirectory SourceDirectory="$(ModZipStagingDir)" DestinationFile="$(TargetZipPath)" Overwrite="true" />
+
+		<!-- Move completed zip into the project \Release\ directory -->
+		<Copy SourceFiles="$(TargetZipPath)" DestinationFolder="$(ReleaseOutputDir)" />
+
+		<!-- Clean up staging directory and local build directory zip copy -->
+		<RemoveDir Directories="$(ModZipStagingDir)" />
+		<Delete Files="$(TargetZipPath)" />
+
+		<Message Text="Successfully packed release archive using assembly version $(ModVersion) to: $(ProjectReleaseZipPath)" Importance="high" />
+	</Target>
+
+</Project>
