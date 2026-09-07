@@ -7,6 +7,7 @@ Requires [BepInEx](https://github.com/BepInEx/BepInEx/releases/tag/v5.4.23.3)
 # Installation
 Extract to your Stationeers folder
 
+# Support Me
 You can support me on Ko-Fi
 
 [Click](https://ko-fi.com/lacyway)
